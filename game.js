@@ -4,13 +4,13 @@ const SECTORS = [20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5];
 const GEOMETRY = { bull:9.34, outerBull:23.38, tripleIn:145.59, tripleOut:157.35, doubleIn:238.24, doubleOut:250 };
 function scoreAt(x,y) {
   const r = Math.hypot(x,y), g = GEOMETRY;
-  if(r > g.doubleOut) return {points:0,label:'Промах. Следующий бросок получится!'};
-  if(r <= g.bull) return {points:50,label:'В яблочко! +50'};
-  if(r <= g.outerBull) return {points:25,label:'Рядом с яблочком! +25'};
+  if(r > g.doubleOut) return {points:0,label:'Промах · 0'};
+  if(r <= g.bull) return {points:50,label:'+50'};
+  if(r <= g.outerBull) return {points:25,label:'+25'};
   const angle = (Math.atan2(x,-y) * 180 / Math.PI + 360 + 9) % 360;
   const sector = SECTORS[Math.floor(angle/18)];
   const multiplier = r >= g.doubleIn ? 2 : r >= g.tripleIn && r <= g.tripleOut ? 3 : 1;
-  return {points:sector*multiplier,sector,multiplier,label:multiplier===3?`Тройное попадание! ${sector} × 3 = ${sector*3}`:multiplier===2?`Двойное попадание! ${sector} × 2 = ${sector*2}`:`Сектор ${sector}. +${sector}`};
+  return {points:sector*multiplier,sector,multiplier,label:multiplier===3?`${sector} × 3 = ${sector*3}`:multiplier===2?`${sector} × 2 = ${sector*2}`:`+${sector}`};
 }
 function randomHit(random=Math.random) {
   // Same odds for both players and every dart colour. Bull is rare but reachable.
@@ -58,10 +58,10 @@ function sound(type){if(!soundOn)return;try{audioContext??=new (window.AudioCont
 function updateSound(){$('sound').setAttribute('aria-pressed',String(soundOn));$('sound').setAttribute('aria-label',soundOn?'Выключить звук':'Включить звук');$('sound-waves').setAttribute('d',soundOn?'M16 8q4 4 0 8m3-11q6 7 0 14':'m17 9 5 6m0-6-5 6');}updateSound();
 $('sound').onclick=()=>{soundOn=!soundOn;updateSound();try{localStorage.setItem('darts-sound',soundOn?'on':'off');}catch{}if(soundOn)sound('select');};
 const buttons=[...document.querySelectorAll('.dart-choice')];
-buttons.forEach((button,i)=>button.onclick=()=>{if(!playing||locked||match.phase!=='select')return;selected=i;buttons.forEach((b,j)=>b.setAttribute('aria-pressed',String(i===j)));$('throw').disabled=false;$('throw').textContent='БРОСИТЬ!';$('hint').textContent=`${colours[i][0]} дротик выбран. Готовы?` ;sound('select');});
-function switchScene(mode){$('app').className='app '+mode;const menu=mode==='menu',game=mode==='game';$('intro').hidden=!menu;$('play-scene').hidden=mode==='result';$('menu-actions').hidden=!menu;$('decor-left').hidden=!menu;$('decor-right').hidden=!menu;for(const id of ['scoreboard','note','turn','controls'])$(id).hidden=!game;$('result').hidden=mode!=='result';$('home').hidden=menu;}
+buttons.forEach((button,i)=>button.onclick=()=>{if(!playing||locked||match.phase!=='select')return;selected=i;buttons.forEach((b,j)=>b.setAttribute('aria-pressed',String(i===j)));throwDart();});
+function switchScene(mode){$('app').className='app '+mode;const menu=mode==='menu',game=mode==='game';$('intro').hidden=!menu;$('play-scene').hidden=mode==='result';$('menu-actions').hidden=!menu;$('decor-left').hidden=!menu;$('decor-right').hidden=!menu;for(const id of ['scoreboard','turn','controls'])$(id).hidden=!game;$('result').hidden=mode!=='result';$('home').hidden=menu;}
 function cleanEffects(){document.querySelectorAll('.points,.confetti').forEach(e=>e.remove());$('dart-layer').replaceChildren();$('board-wrap').classList.remove('shake','bull-glow');}
-function showTurn(){selected=null;locked=false;cleanEffects();buttons.forEach(b=>{b.disabled=false;b.setAttribute('aria-pressed','false');});$('throw').disabled=true;$('throw').textContent='Выбери дротик';$('hint').textContent='Выбери цвет своего дротика';$('turn').textContent=match.player===0?'Ход педагога':'Ход ребёнка';$('round').textContent=`РАУНД ${match.round} / 10`;$('round-dots').innerHTML=Array.from({length:10},(_,i)=>`<i class="${i<match.round-1?'done':i===match.round-1?'current':''}"></i>`).join('');for(let i=0;i<2;i++){$(`row-${i}`).classList.toggle('active',match.player===i);$(`score-${i}`).textContent=match.scores[i];}$('status').textContent='';}
+function showTurn(){selected=null;locked=false;cleanEffects();buttons.forEach(b=>{b.disabled=false;b.setAttribute('aria-pressed','false');});$('next-turn').disabled=true;$('next-turn').hidden=true;$('turn').textContent=match.player===0?'Ход педагога':'Ход ребёнка';$('round').textContent=`РАУНД ${match.round} / 10`;$('round-dots').innerHTML=Array.from({length:10},(_,i)=>`<i class="${i<match.round-1?'done':i===match.round-1?'current':''}"></i>`).join('');for(let i=0;i<2;i++){$(`row-${i}`).classList.toggle('active',match.player===i);$(`score-${i}`).textContent=match.scores[i];}$('status').textContent='';}
 function start(){token++;match=new Match();playing=true;switchScene('game');showTurn();sound('select');buttons[0].focus({preventScroll:true});}
 function menu(){token++;playing=false;locked=false;cleanEffects();match=new Match();switchScene('menu');$('start').focus({preventScroll:true});}
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -69,7 +69,7 @@ async function animate(element,frames,options){if(!element.animate)return;try{aw
 function celebrate(){if(reduced)return;const box=document.createElement('div');box.className='confetti';box.setAttribute('aria-hidden','true');for(let i=0;i<55;i++){const p=document.createElement('i');p.style.cssText=`left:${Math.random()*100}%;background:${colours[i%6][1]};--dx:${Math.random()*220-110}px;animation-delay:${Math.random()*.7}s;animation-duration:${2+Math.random()*2}s`;box.append(p);}document.body.append(box);setTimeout(()=>box.remove(),5000);}
 async function throwDart(){
  if(!playing||locked||selected===null||!match.begin())return;
- locked=true;const currentToken=token,player=match.player,colour=selected;buttons.forEach(b=>b.disabled=true);$('throw').disabled=true;$('throw').textContent='Дротик летит…';$('hint').textContent='Смотрим, куда попадёт!';$('status').textContent='';
+ locked=true;const currentToken=token,player=match.player,colour=selected;buttons.forEach(b=>b.disabled=true);$('next-turn').disabled=true;$('next-turn').hidden=true;$('status').textContent='';
  const hit=randomHit(),wrap=$('board-wrap'),layer=$('dart-layer'),dart=document.createElement('div');dart.className='flying-dart';dart.innerHTML=dartSVG(colours[colour][1],`flying${token}-${match.shots.length}`);dart.style.left=`${(300+hit.x)/6}%`;dart.style.top=`${(300+hit.y)/6}%`;dart.style.transform='translate(-50%,-100%) rotate(24deg) scale(.55)';layer.append(dart);
  const rect=wrap.getBoundingClientRect(),from=buttons[colour].getBoundingClientRect(),dx=(from.left+from.width/2)-(rect.left+(300+hit.x)/600*rect.width),dy=(from.top+from.height/2)-(rect.top+(300+hit.y)/600*rect.height);
  sound('flight');await animate(dart,[{transform:`translate(calc(-50% + ${dx}px),calc(-100% + ${dy}px)) rotate(-18deg) scale(1.2)`},{transform:`translate(calc(-50% + ${dx*.45}px),calc(-100% + ${dy*.4-90}px)) rotate(8deg) scale(.95)`,offset:.5},{transform:'translate(-50%,-100%) rotate(24deg) scale(.55)'}],{duration:850,easing:'cubic-bezier(.3,.1,.6,1)',fill:'none'});
@@ -79,13 +79,11 @@ async function throwDart(){
  await animate(point,[{opacity:0,scale:.6},{opacity:1,scale:1.15},{opacity:1,scale:1}],{duration:350,fill:'none'});await delay(reduced?100:450);if(currentToken!==token){point.remove();return;}
  const dest=$(`score-${player}`).getBoundingClientRect();await animate(point,[{transform:'translate(-50%,-50%)',opacity:1},{transform:`translate(calc(-50% + ${dest.left+dest.width/2-px}px),calc(-50% + ${dest.top+dest.height/2-py}px)) scale(.45)`,opacity:.2}],{duration:650,easing:'ease-in-out',fill:'none'});point.remove();if(currentToken!==token)return;
  const counter=$(`score-${player}`),total=match.scores[player],before=total-result.points;const startTime=performance.now();await new Promise(resolve=>{function tick(time){if(currentToken!==token){resolve();return;}const progress=Math.min(1,(time-startTime)/(reduced?1:450));counter.textContent=Math.round(before+(total-before)*progress);if(progress<1)requestAnimationFrame(tick);else resolve();}requestAnimationFrame(tick);});if(currentToken!==token)return;
- $('hint').textContent='Результат засчитан. Продолжайте, когда будете готовы.';$('throw').textContent=match.shots.length===20?'Посмотреть итог':'Следующий ход';$('throw').disabled=false;locked=false;
+ $('next-turn').textContent=match.shots.length===20?'Итоги':'Передать ход';$('next-turn').hidden=false;$('next-turn').disabled=false;locked=false;
 }
 function finish(){playing=false;switchScene('result');cleanEffects();for(let i=0;i<2;i++)$(`final-${i}`).textContent=match.scores[i];$('winner').textContent=match.scores[0]===match.scores[1]?'НИЧЬЯ!':match.scores[0]>match.scores[1]?'ПОБЕДИЛ ПЕДАГОГ!':'ПОБЕДИЛ РЕБЁНОК!';$('history').innerHTML=Array.from({length:10},(_,i)=>`<tr><td>${i+1}</td><td>${match.shots[i*2].points}</td><td>${match.shots[i*2+1].points}</td></tr>`).join('');document.querySelector('.history').open=false;celebrate();sound('win');$('replay').focus({preventScroll:true});}
-$('throw').onclick=()=>{if(locked)return;if(match.phase==='result'){match.next();if(match.phase==='finished')finish();else{showTurn();buttons[0].focus({preventScroll:true});}}else throwDart();};
+$('next-turn').onclick=()=>{if(locked)return;if(match.phase==='result'){match.next();if(match.phase==='finished')finish();else{showTurn();buttons[0].focus({preventScroll:true});}}};
 $('start').onclick=start;$('replay').onclick=start;$('result-home').onclick=menu;
-function help(){$('help-start').textContent=playing?'Продолжить игру':'Начать игру';$('help-dialog').showModal();}
-$('help').onclick=help;$('instructions').onclick=help;$('help-start').onclick=()=>{$('help-dialog').close();if(!playing)start();};
 $('home').onclick=()=>{if(playing)$('exit-dialog').showModal();else menu();};$('stay').onclick=()=>$('exit-dialog').close();$('exit').onclick=()=>{$('exit-dialog').close();menu();};
 for(const dialog of document.querySelectorAll('dialog')){dialog.querySelector('.close').onclick=()=>dialog.close();dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();}});}
 }
