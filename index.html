@@ -12,9 +12,9 @@
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}.confetti{display:none}}
 
 /* The room artwork leaves the playing wall clear. */
-body{background:#284f61 url('assets/playroom.jpg') center center / cover fixed no-repeat;isolation:isolate}body:before{display:none}.topbar{position:relative;z-index:1}.app{padding-top:12px}.intro{margin-bottom:14px}.game .arena{grid-template-columns:210px minmax(0,480px) 210px;gap:24px}.game .arena:after{content:''}.board-wrap{filter:drop-shadow(7px 16px 9px #0e203e90)}.turn-heading{text-shadow:0 2px 8px #102e44}.controls{margin-top:14px}.status:empty{display:none}.dart-choice span{display:none}.dart-choice{min-height:100px}.dart-choice:not(:disabled):hover svg{transform:translateY(-8px);filter:drop-shadow(0 0 7px #ffe5ac)}.result{background:#12394ee8;padding:26px;border:1px solid #e6c78555;border-radius:28px}.wordmark{visibility:hidden}.title-plaque{background:linear-gradient(#26485c,#152b43)}.rack:before{background:linear-gradient(120deg,#466880,#23384e)}
+body{background:#284f61 url('assets/playroom.jpg') center center / 100% 100% fixed no-repeat;isolation:isolate}body:before{display:none}.topbar{position:relative;z-index:1}.app{padding-top:12px}.intro{margin-bottom:14px}.game .arena{grid-template-columns:210px minmax(0,480px) 210px;gap:24px}.game .arena:after{content:''}.board-wrap{filter:drop-shadow(7px 16px 9px #0e203e90)}.turn-heading{text-shadow:0 2px 8px #102e44}.controls{margin-top:14px}.status:empty{display:none}.dart-choice span{display:none}.dart-choice{min-height:100px}.dart-choice:not(:disabled):hover svg{transform:translateY(-8px);filter:drop-shadow(0 0 7px #ffe5ac)}.result{background:#12394ee8;padding:26px;border:1px solid #e6c78555;border-radius:28px}.wordmark{visibility:hidden}.title-plaque{background:linear-gradient(#26485c,#152b43)}.rack:before{background:linear-gradient(120deg,#466880,#23384e)}
 @media(max-width:850px){.game .arena{grid-template-columns:165px minmax(0,480px);gap:18px}.game .arena:after{display:none}}
-@media(max-width:580px){body{background-position:50% 50%;background-size:auto 100svh}.app{padding-top:6px}.game .arena{display:flex;gap:10px}.controls{margin-top:10px}.dart-choice{min-height:87px}.intro{margin:12px 0 20px}.result{padding:20px 14px}.topbar{height:58px}.menu .arena{margin:20px 0}.menu .actions{margin-top:24px}}
+@media(max-width:580px){body{background-position:50% 50%;background-size:100% 100svh}.app{padding-top:6px}.game .arena{display:flex;gap:10px}.controls{margin-top:10px}.dart-choice{min-height:87px}.intro{margin:12px 0 20px}.result{padding:20px 14px}.topbar{height:58px}.menu .arena{margin:20px 0}.menu .actions{margin-top:24px}}
 </style>
 </head>
 <body>
@@ -34,5 +34,5 @@ body{background:#284f61 url('assets/playroom.jpg') center center / cover fixed n
 </main>
 
 <dialog class="dialog" id="exit-dialog"><button class="close" aria-label="Закрыть">×</button><h2>Вернуться в меню?</h2><p>Счёт будет сброшен.</p><div class="actions"><button class="gold-button" id="stay">Продолжить</button><button class="cream-button" id="exit">В меню</button></div></dialog>
-<script src="game.js?v=playroom-2"></script>
+<script src="game.js?v=playroom-3"></script>
 </body></html>
