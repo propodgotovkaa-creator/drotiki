@@ -8,7 +8,18 @@ assert.equal(scoreAt(0,0).points,50);assert.equal(scoreAt(0,15).points,25);asser
 assert.equal(scoreAt(0,-g.bull).points,50);assert.equal(scoreAt(0,-g.bull-.001).points,25);
 assert.equal(scoreAt(0,-g.outerBull-.001).points,20);assert.equal(scoreAt(0,-g.tripleIn).points,60);assert.equal(scoreAt(0,-g.tripleOut-.001).points,20);assert.equal(scoreAt(0,-g.doubleIn).points,40);
 for(const kind of [0,.05,.12,.5]){let j=0;const values=[kind,.25,.5];const hit=randomHit(()=>values[j++]);assert.ok(Number.isFinite(hit.x)&&Number.isFinite(hit.y));assert.equal(scoreAt(hit.x,hit.y).points,kind===0?50:kind===.05?25:kind===.12?0:6);}
-const match=new Match();for(let i=0;i<20;i++){assert.equal(match.player,i%2);assert.equal(match.round,Math.floor(i/2)+1);assert.equal(match.begin(),true);assert.equal(match.begin(),false);const r=match.land({x:0,y:0});assert.equal(r.points,50);assert.equal(match.land({x:0,y:0}),null);assert.equal(match.begin(),false);assert.equal(match.next(),true);}
+const match=new Match();for(let i=0;i<20;i++){assert.equal(match.player,(i+1)%2);assert.equal(match.round,Math.floor(i/2)+1);assert.equal(match.begin(),true);assert.equal(match.begin(),false);const r=match.land({x:0,y:0});assert.equal(r.points,50);assert.equal(match.land({x:0,y:0}),null);assert.equal(match.begin(),false);assert.equal(match.next(),true);}
 assert.deepEqual(match.scores,[500,500]);assert.equal(match.phase,'finished');assert.equal(match.begin(),false);assert.equal(match.next(),false);
 const fresh=new Match();assert.deepEqual(fresh.scores,[0,0]);assert.equal(fresh.round,1);
 console.log('PASS: all 20 sectors, singles/doubles/triples, bull boundaries, miss, random landing categories, 20 turns, double-click guards, reset.');
+
+// Probe both sides of each wedge and every scoring ring, including tiny offsets.
+for(let i=0;i<20;i++)for(const offset of [-8.99,0,8.99]){
+ const angle=(i*18+offset)*Math.PI/180;
+ for(const [radius,multiple] of [[24,1],[100,1],[145.58,1],[145.60,3],[157.34,3],[157.36,1],[238.23,1],[238.25,2],[249.99,2],[250.01,0]])
+ assert.equal(scoreAt(Math.sin(angle)*radius,-Math.cos(angle)*radius).points,SECTORS[i]*multiple);
+}
+const unequal=new Match();for(let i=0;i<20;i++){const child=i%2===0;unequal.begin();const angle=(child?0:18)*Math.PI/180;const shot=unequal.land({x:Math.sin(angle)*80,y:-Math.cos(angle)*80});assert.equal(shot.player,child?1:0);assert.equal(shot.round,Math.floor(i/2)+1);unequal.next();}
+assert.deepEqual(unequal.scores,[10,200]);
+assert.equal(unequal.shots.filter(s=>s.player===1).length,10);
+console.log('PASS: 600 additional wedge/ring edge cases; child starts each round; unequal totals teacher 10 / child 200.');
